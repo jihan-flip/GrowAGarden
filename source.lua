@@ -1,52 +1,65 @@
--- source.lua
--- Grow a Garden Pet Spawner by Jihan
--- Spawn pets like Raccoon, Dragonfly with one click
+-- source.lua — Grow a Garden Pet Spawner by Jihan 🌱
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RS = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
--- Build GUI
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "GAGPetSpawner"
-local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 250, 0, 100)
-frame.Position = UDim2.new(0.5, -125, 0.2, 0)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+-- Fetch the Pets folder
+local petFolder = RS:FindFirstChild("Pets")
+if not petFolder then
+    warn("[Pet Spawner] ❌ 'Pets' folder missing in ReplicatedStorage")
+    return
+end
 
-local dropdown = Instance.new("TextBox", frame)
-dropdown.PlaceholderText = "Enter pet: Raccoon, Dragonfly"
-dropdown.Size = UDim2.new(1, -20, 0, 40)
-dropdown.Position = UDim2.new(0, 10, 0, 10)
-dropdown.ClearTextOnFocus = false
-dropdown.TextColor3 = Color3.new(1,1,1)
-dropdown.BackgroundColor3 = Color3.fromRGB(40,40,40)
+-- GUI
+local G = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+G.Name = "GAGPetSpawner"
+local F = Instance.new("Frame", G)
+F.Size = UDim2.new(0, 300, 0, 140)
+F.Position = UDim2.new(0.5, -150, 0.3, -70)
+F.BackgroundColor3 = Color3.fromRGB(20,20,20)
+F.BorderSizePixel = 0
+F.Active = true
+F.Draggable = true
 
-local spawnBtn = Instance.new("TextButton", frame)
-spawnBtn.Text = "Spawn Pet"
-spawnBtn.Size = UDim2.new(0.5, -10, 0, 30)
-spawnBtn.Position = UDim2.new(0.25, 0, 0, 60)
-spawnBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-spawnBtn.TextColor3 = Color3.new(1,1,1)
+-- Dropdown / Text Input
+local T = Instance.new("TextBox", F)
+T.Size = UDim2.new(1, -20, 0, 40)
+T.Position = UDim2.new(0, 10, 0, 10)
+T.PlaceholderText = "Type pet name… (e.g. Raccoon)"
+T.ClearTextOnFocus = false
+T.TextColor3 = Color3.fromRGB(230,230,230)
+T.BackgroundColor3 = Color3.fromRGB(40,40,40)
+T.TextScaled = true
 
--- Define Pet List — adapt with actual names
-local validPets = { "Raccoon", "Dragonfly", "RedFox", "QueenBee" }
+-- Button
+local B = Instance.new("TextButton", F)
+B.Size = UDim2.new(0.6, 0, 0, 40)
+B.Position = UDim2.new(0.2, 0, 0, 60)
+B.Text = "Spawn!"
+B.Font = Enum.Font.GothamBold
+B.TextColor3 = Color3.new(1,1,1)
+B.BackgroundColor3 = Color3.fromRGB(60,60,60)
+B.TextScaled = true
 
-spawnBtn.MouseButton1Click:Connect(function()
-    local input = dropdown.Text:lower()
-    local petFolder = ReplicatedStorage:FindFirstChild("Pets")
-    if not petFolder then return warn("Pets folder not found") end
+-- Debug: print available pets
+for _, p in ipairs(petFolder:GetChildren()) do
+    print("[Pet Spawner] 🐾 Found pet:", p.Name)
+end
+
+-- Button action
+B.MouseButton1Click:Connect(function()
+    local inp = T.Text:lower()
+    if inp == "" then return end
 
     for _, pet in ipairs(petFolder:GetChildren()) do
-        if pet.Name:lower():match(input) then
+        if pet.Name:lower():match(inp) then
             local clone = pet:Clone()
             clone.Parent = player:WaitForChild("Backpack")
-            print("✅ Spawned pet:", pet.Name)
+            print("[Pet Spawner] ✅ Spawned:", pet.Name)
             return
         end
     end
-    warn("❌ Pet not found:", dropdown.Text)
+
+    warn("[Pet Spawner] ❌ No matching pet for:", T.Text)
 end)
